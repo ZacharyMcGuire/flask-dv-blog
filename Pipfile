@@ -8,6 +8,8 @@ autopep8 = "*"
 
 [packages]
 flask = "*"
+pytest = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.8"
