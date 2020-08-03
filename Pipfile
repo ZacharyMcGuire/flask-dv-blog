@@ -10,6 +10,7 @@ autopep8 = "*"
 flask = "*"
 pytest = "*"
 coverage = "*"
+flask-sqlalchemy = "*"
 
 [requires]
 python_version = "3.8"
