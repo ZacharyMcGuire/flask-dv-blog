@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -6,6 +7,11 @@ from flask import url_for
 
 from flaskr import db, create_hash
 from flaskr.auth.models import User, HubUser
+
+
+def generate_post_id(self):
+    """Generate a new UUID for use as the `post_id`"""
+    return uuid.uuid4()
 
 
 class Post(db.Model):
@@ -38,7 +44,9 @@ class HubPost(db.Model):
         db.DateTime, nullable=False, index=True,
         default=datetime.datetime.utcnow(),
     )
-    post_id = db.Column(db.Integer, nullable=False, index=True, unique=True)
+    post_id = db.Column(
+        db.String, nullable=False, index=True, unique=True, default=generate_post_id
+    )
 
     author = db.relationship(
         'hub_user', secondary='link_author', backref='hub_post'
