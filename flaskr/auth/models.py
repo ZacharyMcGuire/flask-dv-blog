@@ -32,7 +32,7 @@ class HubUser(db.Model):
         db.DateTime, nullable=False, index=True,
         default=datetime.datetime.utcnow(),
     )
-    user_id = db.Column(db.Integer, nullable=False, index=True, unique=True)
+    username = db.Column(db.String, unique=True, nullable=False)
 
     @hybrid_property
     def user_hash_key(self):
@@ -46,8 +46,8 @@ class HubUser(db.Model):
         self._user_hash_key = new_hash_key
 
 
-class SatUserInfo(db.Model):
-    __tablename__ = 'sat_user_info'
+class SatUserAuth(db.Model):
+    __tablename__ = 'sat_user_auth'
     user_hash_key = db.Column(
         db.ForeignKey(HubUser.user_hash_key), nullable=False, primary_key=True
     )
@@ -55,7 +55,6 @@ class SatUserInfo(db.Model):
         db.DateTime, nullable=False, primary_key=True,
         default=datetime.datetime.utcnow(),
     )
-    username = db.Column(db.String, unique=True, nullable=False)
     _password = db.Column("password", db.String, nullable=False)
 
     @hybrid_property
