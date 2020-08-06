@@ -49,7 +49,7 @@ class HubPost(db.Model):
     )
 
     author = db.relationship(
-        'hub_user', secondary='link_author', backref='hub_post'
+        HubUser, secondary='link_author', backref='hub_post'
     )
 
     @hybrid_property
