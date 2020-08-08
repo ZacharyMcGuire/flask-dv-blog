@@ -1,4 +1,5 @@
 import os
+import hashlib
 
 import click
 from flask import Flask
@@ -7,6 +8,13 @@ from flask_sqlalchemy import SQLAlchemy
 
 
 db = SQLAlchemy()
+
+
+def create_hash(*args):
+    """concatenates and delimits each arg and returns the resulting hash"""
+    string = '␟'.join('{arg}'.format(arg=arg) for arg in args).encode()
+    print(string)
+    return hashlib.sha256(string).hexdigest()
 
 
 def create_app(test_config=None):

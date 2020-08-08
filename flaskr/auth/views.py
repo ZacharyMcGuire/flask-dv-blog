@@ -3,9 +3,10 @@ import functools
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
 )
+from werkzeug.security import check_password_hash
 
-from flaskr import db
-from flaskr.auth.models import User
+from flaskr import db, create_hash
+from flaskr.auth.models import HubUser, SatUserAuth
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -27,8 +28,8 @@ def login_required(view):
 def load_logged_in_user():
     """If a user id is stored in the session, load the user object from
     the database into ``g.user``."""
-    user_id = session.get("user_id")
-    g.user = User.query.get(user_id) if user_id is not None else None
+    user_hash_key = session.get("user_hash_key")
+    g.user = HubUser.query.get(user_hash_key) if user_hash_key is not None else None
 
 
 @bp.route("/register", methods=("GET", "POST"))
@@ -48,13 +49,15 @@ def register():
         elif not password:
             error = "Password is required."
         elif db.session.query(
-            User.query.filter_by(username=username).exists()
+            HubUser.query.filter_by(username=username).exists()
         ).scalar():
             error = f"User {username} is already registered."
 
         if error is None:
             # the name is available, create the user and go to the login page
-            db.session.add(User(username=username, password=password))
+            user_hash_key = create_hash(username)
+            db.session.add(HubUser(user_hash_key=user_hash_key, username=username))
+            db.session.add(SatUserAuth(user_hash_key=user_hash_key, password=password))
             db.session.commit()
             return redirect(url_for("auth.login"))
 
@@ -70,17 +73,17 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
         error = None
-        user = User.query.filter_by(username=username).first()
+        user = HubUser.query.filter_by(username=username).first()
 
         if user is None:
             error = "Incorrect username."
-        elif not user.check_password(password):
+        elif not check_password_hash(user.auth.password, password):
             error = "Incorrect password."
 
         if error is None:
             # store the user id in a new session and return to the index
             session.clear()
-            session["user_id"] = user.id
+            session["user_hash_key"] = user.user_hash_key
             return redirect(url_for("index"))
 
         flash(error)
